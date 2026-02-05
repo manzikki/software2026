@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Language Drill</title>
+</head>
+<body>
+    <h1>Language Drill</h1>
+
+    <div id="prompt"></div>
+    <input id="answer" placeholder="Your answer">
+    <button onclick="check()">Check</button>
+    <button onclick="next()">Next</button>
+
+    <div id="result"></div>
+
+    <script>
+        let correct = "";
+
+        async function next() {
+            const res = await fetch("/next");
+            const data = await res.json();
+            document.getElementById("prompt").innerText = data.prompt;
+            correct = data.answer;
+            document.getElementById("answer").value = "";
+            document.getElementById("result").innerText = "";
+        }
+
+        function check() {
+            const user = document.getElementById("answer").value;
+            document.getElementById("result").innerText =
+                user === correct ? "✅ Correct" : "❌ " + correct;
+        }
+
+        next();
+    </script>
+</body>
+</html>
