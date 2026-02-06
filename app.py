@@ -4,6 +4,7 @@ from flask import Flask, redirect, url_for, session
 from authlib.integrations.flask_client import OAuth
 from datetime import datetime
 from pathlib import Path
+from thai_quiz import render_quiz
 
 app = Flask(__name__)
 
@@ -42,15 +43,16 @@ def index():
         last_login = u.get("last_login")
 
         msg = f"Hello {u.get('name', 'there')}<br>"
-        msg += f"You have logged in {login_count} times.<br>"
+        msg += f"You have logged in {login_count} times. "
 
         if last_login:
             msg += f"Last login was {last_login}"
-        else:
-            msg += "This is your first login!"
 
-        msg += '<br><a href="/logout">Logout</a>'
-        return msg
+        msg += ' <a href="/logout">Logout</a><br/>'
+  	# 👇 Call the quiz
+        quiz_html = render_quiz()
+
+        return header + quiz_html
 
     return '<a href="/login/google">Login with Google</a>'
 
