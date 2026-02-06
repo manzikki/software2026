@@ -49,6 +49,7 @@ def index():
         else:
             msg += "This is your first login!"
 
+        msg += '<br><a href="/logout">Logout</a>'
         return msg
 
     return '<a href="/login/google">Login with Google</a>'
