@@ -37,15 +37,22 @@ google = oauth.register(
 def index():
     if "user" in session:
         u = session["user"]
-        msg = f"Hello {u['name']}<br>"
-        msg += f"You have logged in {u['login_count']} times.<br>"
-        if u["last_login"]:
-            msg += f"Last login was {u['last_login']}"
+
+        login_count = u.get("login_count", 0)
+        last_login = u.get("last_login")
+
+        msg = f"Hello {u.get('name', 'there')}<br>"
+        msg += f"You have logged in {login_count} times.<br>"
+
+        if last_login:
+            msg += f"Last login was {last_login}"
         else:
             msg += "This is your first login!"
+
         return msg
 
     return '<a href="/login/google">Login with Google</a>'
+
 
 
 @app.route("/login/google")
