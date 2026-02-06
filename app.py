@@ -52,7 +52,7 @@ def index():
   	# 👇 Call the quiz
         quiz_html = render_quiz()
 
-        return header + quiz_html
+        return msg + quiz_html
 
     return '<a href="/login/google">Login with Google</a>'
 
