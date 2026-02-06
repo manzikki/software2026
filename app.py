@@ -34,15 +34,17 @@ def login_google():
     redirect_uri = url_for("auth_google", _external=True)
     return google.authorize_redirect(redirect_uri)
 
+
 @app.route("/auth/google")
 def auth_google():
     token = google.authorize_access_token()
-    user = google.parse_id_token(token)
 
-    # Store user info in session
+    # ✅ Correct way: nonce comes from token
+    user = google.parse_id_token(token, nonce=token.get("nonce"))
+
     session["user"] = user
-
     return redirect("/")
+
 
 @app.route("/logout")
 def logout():
