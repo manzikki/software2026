@@ -1,8 +1,21 @@
 import os
+import json
 from flask import Flask, redirect, url_for, session
 from authlib.integrations.flask_client import OAuth
+from datetime import datetime
+from pathlib import Path
 
 app = Flask(__name__)
+
+USERS_FILE = Path("users.json")
+
+def load_users():
+    if USERS_FILE.exists():
+        return json.loads(USERS_FILE.read_text())
+    return {}
+
+def save_users(users):
+    USERS_FILE.write_text(json.dumps(users, indent=2))
 
 # Secret key for sessions
 app.secret_key = os.environ["SECRET_KEY"]
@@ -22,12 +35,18 @@ google = oauth.register(
 
 @app.route("/")
 def index():
-    # If logged in, show Hello
     if "user" in session:
-        return "Hello"
+        u = session["user"]
+        msg = f"Hello {u['name']}<br>"
+        msg += f"You have logged in {u['login_count']} times.<br>"
+        if u["last_login"]:
+            msg += f"Last login was {u['last_login']}"
+        else:
+            msg += "This is your first login!"
+        return msg
 
-    # Otherwise show login link
     return '<a href="/login/google">Login with Google</a>'
+
 
 @app.route("/login/google")
 def login_google():
@@ -38,11 +57,35 @@ def login_google():
 @app.route("/auth/google")
 def auth_google():
     token = google.authorize_access_token()
-
-    # ✅ Correct way: nonce comes from token
     user = google.parse_id_token(token, nonce=token.get("nonce"))
 
-    session["user"] = user
+    email = user["email"]
+    name = user.get("name")
+
+    users = load_users()
+    now = datetime.utcnow().isoformat(timespec="seconds") + "Z"
+
+    if email in users:
+        users[email]["login_count"] += 1
+        last_login = users[email]["last_login"]
+        users[email]["last_login"] = now
+    else:
+        users[email] = {
+            "name": name,
+            "login_count": 1,
+            "last_login": now
+        }
+        last_login = None
+
+    save_users(users)
+
+    session["user"] = {
+        "email": email,
+        "name": name,
+        "login_count": users[email]["login_count"],
+        "last_login": last_login
+    }
+
     return redirect("/")
 
 
